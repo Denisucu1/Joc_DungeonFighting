@@ -1,8 +1,9 @@
-package MyGame;
+package mygame;
 
 import javax.swing.*;
 import java.awt.*;
-import Input.KeyHandler;
+import input.KeyHandler;
+import entities.Player;
 
 public class GamePanel extends JPanel implements Runnable {
 
@@ -18,10 +19,7 @@ public class GamePanel extends JPanel implements Runnable {
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
 
-    int playerX = 100;
-    int playerY = 100;
-    int playerSpeed = 4;
-
+    Player player = new Player(this, keyH);
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -31,13 +29,6 @@ public class GamePanel extends JPanel implements Runnable {
         this.setFocusable(true);
     }
 
-    public void update() {
-        if (keyH.upPressed) playerY -= playerSpeed;
-        if (keyH.downPressed) playerY += playerSpeed;
-        if (keyH.leftPressed) playerX -= playerSpeed;
-        if (keyH.rightPressed) playerX += playerSpeed;
-    }
-
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
@@ -45,7 +36,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        double drawInterval = 1000000000 / 60; // 0.01666 secunde
+        double drawInterval = 1000000000 / 60;
         double delta = 0;
         long lastTime = System.nanoTime();
         long currentTime;
@@ -63,14 +54,16 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
+    public void update() {
+        player.update();
+    }
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        g2.setColor(Color.WHITE);
-        g2.fillRect(playerX, playerY, tileSize, tileSize);
+        player.draw(g2);
 
         g2.dispose();
     }
