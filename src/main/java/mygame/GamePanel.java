@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import input.KeyHandler;
 import entities.Player;
+import tile.TileManager;
 
 public class GamePanel extends JPanel implements Runnable {
 
@@ -20,6 +21,7 @@ public class GamePanel extends JPanel implements Runnable {
     Thread gameThread;
 
     Player player = new Player(this, keyH);
+    TileManager tileM;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -27,6 +29,8 @@ public class GamePanel extends JPanel implements Runnable {
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
+
+        tileM = new TileManager(this);
     }
 
     public void startGameThread() {
@@ -62,6 +66,8 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+
+        tileM.draw(g2);
 
         player.draw(g2);
 
