@@ -32,6 +32,18 @@ public class TileManager {
             System.out.println("map01 not found, using default generated map");
             loadMap();
         }
+
+        // Debug dump of loaded map for verification (row-major)
+        System.out.println("--- mapTileNum dump (rows x cols) ---");
+        for (int r = 0; r < gp.maxScreenRow; r++) {
+            StringBuilder sb = new StringBuilder();
+            for (int c = 0; c < gp.maxScreenCol; c++) {
+                sb.append(mapTileNum[c][r]);
+                if (c < gp.maxScreenCol - 1) sb.append(' ');
+            }
+            System.out.println(sb.toString());
+        }
+        System.out.println("-------------------------------------");
     }
 
     public void getTileImage() {
@@ -45,6 +57,7 @@ public class TileManager {
 
             tile[2] = new Tile();
             tile[2].image = loadImage("/tiles/water.png");
+            tile[2].collision = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
