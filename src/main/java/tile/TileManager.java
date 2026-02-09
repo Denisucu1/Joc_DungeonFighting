@@ -21,7 +21,17 @@ public class TileManager {
         mapTileNum = new int[gp.maxScreenCol][gp.maxScreenRow];
 
         getTileImage();
-        loadMap();
+
+        // Try to load default map01 if present (classpath or res folder), otherwise use simple generated map
+        InputStream mapStream = getClass().getResourceAsStream("/maps/map01.txt");
+        File mapFile = new File("res/maps/map01.txt");
+        if (mapStream != null || mapFile.exists()) {
+            System.out.println("Found map01, loading it...");
+            loadMap("/maps/map01.txt");
+        } else {
+            System.out.println("map01 not found, using default generated map");
+            loadMap();
+        }
     }
 
     public void getTileImage() {
@@ -97,35 +107,44 @@ public class TileManager {
     }
 
     public void loadMap(String filePath) {
+        BufferedReader br = null;
         try {
             InputStream is = getClass().getResourceAsStream(filePath);
-            if (is == null) {
-                System.err.println("Map resource not found: " + filePath);
-                return;
+            if (is != null) {
+                System.out.println("Loading map from classpath: " + filePath);
+                br = new BufferedReader(new InputStreamReader(is));
+            } else {
+                File f = new File("res" + filePath);
+                System.out.println("Trying map file path: " + f.getAbsolutePath());
+                if (f.exists()) {
+                    br = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+                    System.out.println("Loaded map from file: " + f.getAbsolutePath());
+                } else {
+                    System.err.println("Map resource not found: " + filePath);
+                    return;
+                }
             }
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
             int col = 0;
             int row = 0;
 
-            while (col < gp.maxScreenCol && row < gp.maxScreenRow) {
-                String line = br.readLine();
-                if (line == null) break;
-                String numbers[] = line.split(" ");
-
-                while (col < gp.maxScreenCol) {
+            String line;
+            while ((line = br.readLine()) != null && row < gp.maxScreenRow) {
+                String[] numbers = line.trim().split("\\s+");
+                col = 0;
+                while (col < gp.maxScreenCol && col < numbers.length) {
                     int num = Integer.parseInt(numbers[col]);
                     mapTileNum[col][row] = num;
                     col++;
                 }
-                if (col == gp.maxScreenCol) {
-                    col = 0;
-                    row++;
-                }
+                row++;
             }
-            br.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (br != null) br.close();
+            } catch (Exception ignored) {}
         }
     }
 
