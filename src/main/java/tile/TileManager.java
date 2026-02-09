@@ -4,9 +4,11 @@ import mygame.GamePanel;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class TileManager {
     GamePanel gp;
@@ -81,9 +83,8 @@ public class TileManager {
         return null;
     }
 
+    // Preserve original simple map behavior for no-arg call
     public void loadMap() {
-        // Aici am putea citi dintr-un fișier .txt, dar pentru început
-        // hai să umplem harta cu "0" (iarbă) și marginea cu "1" (perete)
         for (int col = 0; col < gp.maxScreenCol; col++) {
             for (int row = 0; row < gp.maxScreenRow; row++) {
                 if (col == 0 || col == gp.maxScreenCol - 1 || row == 0 || row == gp.maxScreenRow - 1) {
@@ -92,6 +93,39 @@ public class TileManager {
                     mapTileNum[col][row] = 0; // Iarbă în interior
                 }
             }
+        }
+    }
+
+    public void loadMap(String filePath) {
+        try {
+            InputStream is = getClass().getResourceAsStream(filePath);
+            if (is == null) {
+                System.err.println("Map resource not found: " + filePath);
+                return;
+            }
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+            int col = 0;
+            int row = 0;
+
+            while (col < gp.maxScreenCol && row < gp.maxScreenRow) {
+                String line = br.readLine();
+                if (line == null) break;
+                String numbers[] = line.split(" ");
+
+                while (col < gp.maxScreenCol) {
+                    int num = Integer.parseInt(numbers[col]);
+                    mapTileNum[col][row] = num;
+                    col++;
+                }
+                if (col == gp.maxScreenCol) {
+                    col = 0;
+                    row++;
+                }
+            }
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
