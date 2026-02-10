@@ -5,9 +5,11 @@ import java.awt.*;
 import input.KeyHandler;
 import entities.Player;
 import tile.TileManager;
+import object.SuperObject;
 
 public class GamePanel extends JPanel implements Runnable {
 
+    public AssetSetter aSetter = new AssetSetter(this);
     final int originalTileSize = 16;
     final int scale = 3;
     public final int tileSize = originalTileSize * scale;
@@ -24,12 +26,15 @@ public class GamePanel extends JPanel implements Runnable {
     TileManager tileM;
     public CollisionChecker cChecker;
 
+    public SuperObject obj[] = new SuperObject[10];
+
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
+
 
         tileM = new TileManager(this);
         cChecker = new CollisionChecker(this);
@@ -71,8 +76,18 @@ public class GamePanel extends JPanel implements Runnable {
 
         tileM.draw(g2);
 
+        for (int i = 0; i < obj.length; i++) {
+            if (obj[i] != null) {
+                obj[i].draw(g2, this);
+            }
+        }
+
         player.draw(g2);
 
         g2.dispose();
+    }
+
+    public void setupGame() {
+        aSetter.setObject();
     }
 }
