@@ -11,22 +11,29 @@ import java.io.InputStream; // IMPORT NOU
 public class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
+    int hasKey = 0;
+
+    public final int screenX;
+    public final int screenY;
 
     public Player(GamePanel gp, KeyHandler keyH) {
         this.gp = gp;
         this.keyH = keyH;
 
-        solidArea = new Rectangle(8, 16, 32, 32);
+        screenX = gp.screenWidth / 2 - (gp.tileSize / 2);
+        screenY = gp.screenHeight / 2 - (gp.tileSize / 2);
 
+        solidArea = new Rectangle(8, 16, 32, 32);
         setDefaultValues();
-        getPlayerImage(); // REPARAT: Acum apelăm funcția de încărcare!
+        getPlayerImage();
     }
 
     public void setDefaultValues() {
-        x = 100;
-        y = 100;
+        // Începem în mijlocul hărții mari (50x50)
+        worldX = gp.tileSize * 25;
+        worldY = gp.tileSize * 25;
         speed = 4;
-        direction = "down"; // Inițializăm direcția
+        direction = "down";
     }
 
     public void getPlayerImage() {
@@ -78,12 +85,15 @@ public class Player extends Entity {
             collisionOn = false;
             gp.cChecker.checkTile(this);
 
+            int objIndex = gp.cChecker.checkObject(this, true);
+            pickUpObject(objIndex);
+
             if (!collisionOn) {
                 switch (direction) {
-                    case "up": y -= speed; break;
-                    case "down": y += speed; break;
-                    case "left": x -= speed; break;
-                    case "right": x += speed; break;
+                    case "up": worldY -= speed; break;
+                    case "down": worldY += speed; break;
+                    case "left": worldX -= speed; break;
+                    case "right": worldX += speed; break;
                 }
             }
 
@@ -109,11 +119,25 @@ public class Player extends Entity {
 
         if (image != null) {
             // Desenăm personajul
-            g2.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
+            g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
         } else {
             // Fallback: dacă tot nu avem imagine, desenăm pătratul alb
             g2.setColor(Color.WHITE);
-            g2.fillRect(x, y, gp.tileSize, gp.tileSize);
+            g2.fillRect(screenX, screenY, gp.tileSize, gp.tileSize);
+        }
+    }
+
+    public void pickUpObject(int i) {
+        if (i != 999) {
+            String objectName = gp.obj[i].name;
+
+            switch (objectName) {
+                case "Key":
+                    hasKey++;
+                    gp.obj[i] = null;
+                    System.out.println("Ai găsit o cheie! Total: " + hasKey);
+                    break;
+            }
         }
     }
 }

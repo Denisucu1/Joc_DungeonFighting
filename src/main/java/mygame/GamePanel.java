@@ -7,7 +7,9 @@ import entities.Player;
 import tile.TileManager;
 import object.SuperObject;
 
+
 public class GamePanel extends JPanel implements Runnable {
+
 
     public AssetSetter aSetter = new AssetSetter(this);
     final int originalTileSize = 16;
@@ -19,11 +21,16 @@ public class GamePanel extends JPanel implements Runnable {
     public final int screenWidth = tileSize * maxScreenCol;
     public final int screenHeight = tileSize * maxScreenRow;
 
+    public final int maxWorldCol = 50;
+    public final int maxWorldRow = 50;
+    public final int worldWidth = tileSize * maxWorldCol;
+    public final int worldHeight = tileSize * maxWorldRow;
+
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
 
-    Player player = new Player(this, keyH);
-    TileManager tileM;
+    public Player player = new Player(this, keyH);
+    public TileManager tileM = new TileManager(this);;
     public CollisionChecker cChecker;
 
     public SuperObject obj[] = new SuperObject[10];

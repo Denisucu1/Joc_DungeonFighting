@@ -5,8 +5,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -17,169 +15,89 @@ public class TileManager {
 
     public TileManager(GamePanel gp) {
         this.gp = gp;
-        tile = new Tile[10]; // Putem avea 10 tipuri diferite de tile-uri
-        mapTileNum = new int[gp.maxScreenCol][gp.maxScreenRow];
+        tile = new Tile[10];
+
+        // REPARAT: Matricea trebuie să fie de mărimea LUMII, nu a ecranului
+        mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
 
         getTileImage();
-
-        // Try to load default map01 if present (classpath or res folder), otherwise use simple generated map
-        InputStream mapStream = getClass().getResourceAsStream("/maps/map01.txt");
-        File mapFile = new File("res/maps/map01.txt");
-        if (mapStream != null || mapFile.exists()) {
-            System.out.println("Found map01, loading it...");
-            loadMap("/maps/map01.txt");
-        } else {
-            System.out.println("map01 not found, using default generated map");
-            loadMap();
-        }
-
-        // Debug dump of loaded map for verification (row-major)
-        System.out.println("--- mapTileNum dump (rows x cols) ---");
-        for (int r = 0; r < gp.maxScreenRow; r++) {
-            StringBuilder sb = new StringBuilder();
-            for (int c = 0; c < gp.maxScreenCol; c++) {
-                sb.append(mapTileNum[c][r]);
-                if (c < gp.maxScreenCol - 1) sb.append(' ');
-            }
-            System.out.println(sb.toString());
-        }
-        System.out.println("-------------------------------------");
+        loadMap("/maps/world01.txt"); // Asigură-te că fișierul world01.txt există
     }
 
     public void getTileImage() {
         try {
             tile[0] = new Tile();
-            tile[0].image = loadImage("/tiles/grass.png");
+            tile[0].image = ImageIO.read(getClass().getResourceAsStream("/tiles/grass.png"));
 
             tile[1] = new Tile();
-            tile[1].image = loadImage("/tiles/wall.png");
+            tile[1].image = ImageIO.read(getClass().getResourceAsStream("/tiles/wall.png"));
             tile[1].collision = true;
 
             tile[2] = new Tile();
-            tile[2].image = loadImage("/tiles/water.png");
+            tile[2].image = ImageIO.read(getClass().getResourceAsStream("/tiles/water.png"));
             tile[2].collision = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Încearcă să încarce o imagine din classpath (/tiles/...) și, dacă nu există,
-     * încearcă din folderul relativ "res/tiles/..." de pe sistemul de fișiere.
-     * Returnează null dacă nu a reușește.
-     */
-    private BufferedImage loadImage(String resourcePath) {
-        try {
-            // 1) Încearcă classpath
-            InputStream is = getClass().getResourceAsStream(resourcePath);
-            if (is != null) {
-                try (InputStream in = is) {
-                    BufferedImage img = ImageIO.read(in);
-                    if (img != null) {
-                        System.out.println("Loaded " + resourcePath + " from classpath");
-                        return img;
-                    }
-                }
-            } else {
-                System.out.println("Not found on classpath: " + resourcePath);
-            }
-
-            // 2) Fallback: încearcă în folderul res/ (working dir)
-            File f = new File("res" + resourcePath); // resourcePath începe cu '/'
-            System.out.println("Trying filesystem path: " + f.getAbsolutePath());
-            if (f.exists()) {
-                try (InputStream in = new FileInputStream(f)) {
-                    BufferedImage img = ImageIO.read(in);
-                    if (img != null) {
-                        System.out.println("Loaded " + resourcePath + " from file: " + f.getAbsolutePath());
-                        return img;
-                    }
-                }
-            } else {
-                System.out.println("File does not exist: " + f.getAbsolutePath());
-            }
-
-            System.err.println("Resource not found on classpath or filesystem: " + resourcePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    // Preserve original simple map behavior for no-arg call
-    public void loadMap() {
-        for (int col = 0; col < gp.maxScreenCol; col++) {
-            for (int row = 0; row < gp.maxScreenRow; row++) {
-                if (col == 0 || col == gp.maxScreenCol - 1 || row == 0 || row == gp.maxScreenRow - 1) {
-                    mapTileNum[col][row] = 1; // Perete pe margini
-                } else {
-                    mapTileNum[col][row] = 0; // Iarbă în interior
-                }
-            }
-        }
-    }
-
     public void loadMap(String filePath) {
-        BufferedReader br = null;
         try {
             InputStream is = getClass().getResourceAsStream(filePath);
-            if (is != null) {
-                System.out.println("Loading map from classpath: " + filePath);
-                br = new BufferedReader(new InputStreamReader(is));
-            } else {
-                File f = new File("res" + filePath);
-                System.out.println("Trying map file path: " + f.getAbsolutePath());
-                if (f.exists()) {
-                    br = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
-                    System.out.println("Loaded map from file: " + f.getAbsolutePath());
-                } else {
-                    System.err.println("Map resource not found: " + filePath);
-                    return;
-                }
-            }
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
             int col = 0;
             int row = 0;
 
-            String line;
-            while ((line = br.readLine()) != null && row < gp.maxScreenRow) {
-                String[] numbers = line.trim().split("\\s+");
-                col = 0;
-                while (col < gp.maxScreenCol && col < numbers.length) {
+            while (col < gp.maxWorldCol && row < gp.maxWorldRow) {
+                String line = br.readLine();
+
+                while (col < gp.maxWorldCol) {
+                    String[] numbers = line.split(" ");
                     int num = Integer.parseInt(numbers[col]);
                     mapTileNum[col][row] = num;
                     col++;
                 }
-                row++;
+                if (col == gp.maxWorldCol) {
+                    col = 0;
+                    row++;
+                }
             }
+            br.close();
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (br != null) br.close();
-            } catch (Exception ignored) {}
+            System.out.println("Eroare la încărcarea hărții: " + e.getMessage());
         }
     }
 
     public void draw(Graphics2D g2) {
-        int col = 0;
-        int row = 0;
-        int x = 0;
-        int y = 0;
+        int worldCol = 0;
+        int worldRow = 0;
 
-        while (col < gp.maxScreenCol && row < gp.maxScreenRow) {
-            int tileNum = mapTileNum[col][row];
-            if (tile[tileNum] != null && tile[tileNum].image != null) {
-                g2.drawImage(tile[tileNum].image, x, y, gp.tileSize, gp.tileSize, null);
+        while (worldCol < gp.maxWorldCol && worldRow < gp.maxWorldRow) {
+            int tileNum = mapTileNum[worldCol][worldRow];
+
+            // Poziția pe harta mare
+            int worldX = worldCol * gp.tileSize;
+            int worldY = worldRow * gp.tileSize;
+
+            // REPARAT: Calculul poziției pe ECRAN (Camera)
+            // Formula: unde e tile-ul - unde e jucătorul + centrul ecranului
+            int screenX = worldX - gp.player.worldX + gp.player.screenX;
+            int screenY = worldY - gp.player.worldY + gp.player.screenY;
+
+            // OPTIMIZARE (Culling): Desenăm doar dacă tile-ul este vizibil pe ecran
+            if (worldX + gp.tileSize > gp.player.worldX - gp.player.screenX &&
+                    worldX - gp.tileSize < gp.player.worldX + gp.player.screenX &&
+                    worldY + gp.tileSize > gp.player.worldY - gp.player.screenY &&
+                    worldY - gp.tileSize < gp.player.worldY + gp.player.screenY) {
+
+                g2.drawImage(tile[tileNum].image, screenX, screenY, gp.tileSize, gp.tileSize, null);
             }
-            col++;
-            x += gp.tileSize;
 
-            if (col == gp.maxScreenCol) {
-                col = 0;
-                x = 0;
-                row++;
-                y += gp.tileSize;
+            worldCol++;
+            if (worldCol == gp.maxWorldCol) {
+                worldCol = 0;
+                worldRow++;
             }
         }
     }
