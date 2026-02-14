@@ -75,23 +75,41 @@ public class TileManager {
 
         while (worldCol < gp.maxWorldCol && worldRow < gp.maxWorldRow) {
             int tileNum = mapTileNum[worldCol][worldRow];
-
-            // Poziția pe harta mare
             int worldX = worldCol * gp.tileSize;
             int worldY = worldRow * gp.tileSize;
 
-            // REPARAT: Calculul poziției pe ECRAN (Camera)
-            // Formula: unde e tile-ul - unde e jucătorul + centrul ecranului
-            int screenX = worldX - gp.player.worldX + gp.player.screenX;
-            int screenY = worldY - gp.player.worldY + gp.player.screenY;
+            // Calculăm poziția relativă la jucător
+            double screenX = worldX - gp.player.worldX + gp.player.screenX;
+            double screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-            // OPTIMIZARE (Culling): Desenăm doar dacă tile-ul este vizibil pe ecran
+            // Oprim camera la margini (Clamping)
+            if (gp.player.screenX > gp.player.worldX) screenX = worldX;
+            if (gp.player.screenY > gp.player.worldY) screenY = worldY;
+
+            int rightOffset = gp.screenWidth - gp.player.screenX;
+            if (rightOffset > gp.worldWidth - gp.player.worldX) {
+                screenX = gp.screenWidth - (gp.worldWidth - worldX);
+            }
+            int bottomOffset = gp.screenHeight - gp.player.screenY;
+            if (bottomOffset > gp.worldHeight - gp.player.worldY) {
+                screenY = gp.screenHeight - (gp.worldHeight - worldY);
+            }
+
+            // REPARAT: Culling inteligent care include marginile ecranului
             if (worldX + gp.tileSize > gp.player.worldX - gp.player.screenX &&
                     worldX - gp.tileSize < gp.player.worldX + gp.player.screenX &&
                     worldY + gp.tileSize > gp.player.worldY - gp.player.screenY &&
                     worldY - gp.tileSize < gp.player.worldY + gp.player.screenY) {
 
-                g2.drawImage(tile[tileNum].image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+                g2.drawImage(tile[tileNum].image, (int)screenX, (int)screenY, gp.tileSize, gp.tileSize, null);
+            }
+            // ADAUGĂ ACEST "ELSE IF" pentru a forța desenarea la margini:
+            else if (gp.player.screenX > gp.player.worldX ||
+                    gp.player.screenY > gp.player.worldY ||
+                    rightOffset > gp.worldWidth - gp.player.worldX ||
+                    bottomOffset > gp.worldHeight - gp.player.worldY) {
+
+                g2.drawImage(tile[tileNum].image, (int)screenX, (int)screenY, gp.tileSize, gp.tileSize, null);
             }
 
             worldCol++;

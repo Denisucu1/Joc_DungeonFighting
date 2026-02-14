@@ -1,6 +1,8 @@
 package mygame;
 
 import object.OBJ_Key;
+import object.OBJ_Door;
+import object.OBJ_Chest;
 import java.util.Random;
 
 public class AssetSetter {
@@ -16,7 +18,6 @@ public class AssetSetter {
         for(int i = 0; i < 5; i++) {
             gp.obj[i] = new OBJ_Key();
 
-            // Generăm coloană și rând între 1 și 48 (ca să evităm pereții de pe margini)
             int worldCol = random.nextInt(48) + 1;
             int worldRow = random.nextInt(48) + 1;
 
@@ -30,5 +31,12 @@ public class AssetSetter {
             gp.obj[i].worldX = worldCol * gp.tileSize;
             gp.obj[i].worldY = worldRow * gp.tileSize;
         }
+        gp.obj[3] = new OBJ_Door();
+        gp.obj[3].worldX = 28 * gp.tileSize;
+        gp.obj[3].worldY = 25 * gp.tileSize;
+
+        gp.obj[4] = new OBJ_Chest();
+        gp.obj[4].worldX = 30 * gp.tileSize;
+        gp.obj[4].worldY = 25 * gp.tileSize;
     }
 }

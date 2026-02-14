@@ -26,6 +26,8 @@ public class GamePanel extends JPanel implements Runnable {
     public final int worldWidth = tileSize * maxWorldCol;
     public final int worldHeight = tileSize * maxWorldRow;
 
+    public UI ui = new UI(this);
+
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
 
@@ -90,8 +92,10 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
         player.draw(g2);
-
         g2.dispose();
+
+        player.draw(g2);
+        ui.draw(g2);
     }
 
     public void setupGame() {

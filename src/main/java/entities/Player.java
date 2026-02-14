@@ -11,7 +11,7 @@ import java.io.InputStream; // IMPORT NOU
 public class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
-    int hasKey = 0;
+    public int hasKey = 0;
 
     public final int screenX;
     public final int screenY;
@@ -77,27 +77,51 @@ public class Player extends Entity {
 
     public void update() {
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
+
+            // Stabilim direcția pentru animație
             if (keyH.upPressed) direction = "up";
-            else if (keyH.downPressed) direction = "down";
-            else if (keyH.leftPressed) direction = "left";
-            else if (keyH.rightPressed) direction = "right";
+            if (keyH.downPressed) direction = "down";
+            if (keyH.leftPressed) direction = "left";
+            if (keyH.rightPressed) direction = "right";
 
+            // Normalizăm viteza pentru diagonală (să nu meargă mai repede)
+            double currentSpeed = speed;
+            if ((keyH.upPressed || keyH.downPressed) && (keyH.leftPressed || keyH.rightPressed)) {
+                currentSpeed = speed * 0.7071; // Aproximativ 1/sqrt(2)
+            }
+
+            // Verificăm obiectele
             collisionOn = false;
-            gp.cChecker.checkTile(this);
-
             int objIndex = gp.cChecker.checkObject(this, true);
             pickUpObject(objIndex);
 
-            if (!collisionOn) {
-                switch (direction) {
-                    case "up": worldY -= speed; break;
-                    case "down": worldY += speed; break;
-                    case "left": worldX -= speed; break;
-                    case "right": worldX += speed; break;
+            // MIȘCARE PE AXA Y
+            if (keyH.upPressed || keyH.downPressed) {
+                String tempDir = direction;
+                direction = keyH.upPressed ? "up" : "down";
+                collisionOn = false;
+                gp.cChecker.checkTile(this);
+                if (!collisionOn) {
+                    if (direction.equals("up")) worldY -= currentSpeed;
+                    else worldY += currentSpeed;
                 }
+                direction = tempDir;
             }
 
-            // REPARAT: Adăugăm animația picioarelor
+            // MIȘCARE PE AXA X
+            if (keyH.leftPressed || keyH.rightPressed) {
+                String tempDir = direction;
+                direction = keyH.leftPressed ? "left" : "right";
+                collisionOn = false;
+                gp.cChecker.checkTile(this);
+                if (!collisionOn) {
+                    if (direction.equals("left")) worldX -= currentSpeed;
+                    else worldX += currentSpeed;
+                }
+                direction = tempDir;
+            }
+
+            // Animație sprite-uri
             spriteCounter++;
             if (spriteCounter > 12) {
                 spriteNum = (spriteNum == 1) ? 2 : 1;
@@ -109,7 +133,7 @@ public class Player extends Entity {
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
 
-        // REPARAT: Selectăm imaginea potrivită
+        // Switch-ul tău pentru imagini (up1, down1, etc.)
         switch (direction) {
             case "up":    image = (spriteNum == 1) ? up1 : up2; break;
             case "down":  image = (spriteNum == 1) ? down1 : down2; break;
@@ -117,26 +141,41 @@ public class Player extends Entity {
             case "right": image = (spriteNum == 1) ? right1 : right2; break;
         }
 
-        if (image != null) {
-            // Desenăm personajul
-            g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
-        } else {
-            // Fallback: dacă tot nu avem imagine, desenăm pătratul alb
-            g2.setColor(Color.WHITE);
-            g2.fillRect(screenX, screenY, gp.tileSize, gp.tileSize);
+        double drawScreenX = screenX;
+        double drawScreenY = screenY;
+
+        // Clamping pe X
+        if (screenX > worldX) drawScreenX = worldX;
+        else if (gp.screenWidth - screenX > gp.worldWidth - worldX) {
+            drawScreenX = gp.screenWidth - (gp.worldWidth - worldX);
         }
+
+        if (screenY > worldY) drawScreenY = worldY;
+        else if (gp.screenHeight - screenY > gp.worldHeight - worldY) {
+            drawScreenY = gp.screenHeight - (gp.worldHeight - worldY);
+        }
+
+        g2.drawImage(image, (int)drawScreenX, (int)drawScreenY, gp.tileSize, gp.tileSize, null);
     }
 
     public void pickUpObject(int i) {
         if (i != 999) {
             String objectName = gp.obj[i].name;
 
-            switch (objectName) {
-                case "Key":
-                    hasKey++;
-                    gp.obj[i] = null;
-                    System.out.println("Ai găsit o cheie! Total: " + hasKey);
-                    break;
+            if (objectName.equals("Key")) {
+                hasKey++;
+                gp.obj[i] = null;
+            }
+            else if (objectName.equals("Door")) {
+                if (hasKey > 0 && !gp.obj[i].animating && gp.obj[i].frameIndex == 0) {
+                    gp.obj[i].animating = true;
+                    gp.obj[i].collision = false; // Poți trece prin ea după ce începe să se deschidă
+                    hasKey--;
+                }
+            }
+            else if (objectName.equals("Chest")) {
+                gp.obj[i].animating = true;
+                System.out.println("Comoara e a ta!");
             }
         }
     }
