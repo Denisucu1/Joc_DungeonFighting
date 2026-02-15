@@ -10,16 +10,20 @@ public class OBJ_Door extends SuperObject {
         collision = true;
         scale = 1.6;
         solidArea = new Rectangle(-5, -5, (int)(48 * scale)+10, (int)(48 * scale)+10);
-        images = new BufferedImage[6];
+
+        // MODIFICARE: Încărcăm doar 3 imagini (un singur rând)
+        images = new BufferedImage[3];
+
         try {
             BufferedImage sheet = ImageIO.read(getClass().getResourceAsStream("/objects/doors.png"));
-            int count = 0;
-            for (int row = 0; row < 2; row++) {
-                for (int col = 0; col < 3; col++) {
-                    images[count] = sheet.getSubimage(col * 26, row * 32, 26, 32);
-                    count++;
-                }
+
+            // Încărcăm doar cadrele de pe primul rând (row = 0)
+            for (int col = 0; col < 3; col++) {
+                images[col] = sheet.getSubimage(col * 26, 0, 26, 32);
             }
-        } catch (IOException e) { e.printStackTrace(); }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

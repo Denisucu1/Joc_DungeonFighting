@@ -159,8 +159,7 @@ public class Player extends Entity {
     }
 
     public void pickUpObject(int i) {
-        // Adăugăm: && gp.gameState == gp.playState
-        // Asta înseamnă: "Dacă atingi ceva, dar NUMAI dacă nu suntem deja într-un dialog"
+        // Interacționăm cu obiectul doar dacă nu suntem deja într-un dialog
         if (i != 999 && gp.gameState == gp.playState) {
 
             String objectName = gp.obj[i].name;
@@ -169,28 +168,43 @@ public class Player extends Entity {
                 case "Key":
                     gp.playSE(1);
                     hasKey++;
-                    gp.obj[i] = null;
+                    gp.obj[i] = null; // Cheia dispare de tot de pe hartă (cum ai cerut)
                     gp.ui.currentDialogue = "Ai luat o cheie!";
-                    gp.gameState = gp.dialogueState; // Schimbăm starea ca să oprim spam-ul
+                    gp.gameState = gp.dialogueState; // Apare ecranul de dialog
                     break;
+
                 case "Door":
                     if (hasKey > 0) {
                         gp.playSE(3);
-                        gp.obj[i].animating = true;
-                        gp.obj[i].collision = false;
+                        gp.obj[i].animating = true; // REPORNIM ANIMAȚIA
+                        gp.obj[i].collision = false; // Putem trece prin ea
                         hasKey--;
-                    } else {
-                        gp.ui.currentDialogue = "Ușa e încuiată.\nGăsește o cheie!";
+                        gp.ui.currentDialogue = "Ai folosit cheia și ușa s-a deschis!";
                         gp.gameState = gp.dialogueState;
+                    } else {
+                        gp.ui.currentDialogue = "Ușa este încuiată!";
+                        gp.gameState = gp.dialogueState;
+
+                        // Împingem jucătorul 1 pixel înapoi ca să nu mai atingă ușa
+                        // când închide dialogul (previne spam-ul)
+                        movePlayerBack();
                     }
                     break;
+
                 case "Chest":
                     gp.playSE(2);
-                    gp.obj[i].animating = true;
-                    gp.ui.currentDialogue = "BRAVO!\nAi terminat nivelul!";
+                    gp.obj[i].animating = true; // REPORNIM ANIMAȚIA
+                    gp.ui.currentDialogue = "Ai deschis cufărul și ai găsit comoara!";
                     gp.gameState = gp.dialogueState;
                     break;
             }
         }
+    }
+
+    public void movePlayerBack() {
+        if(direction.equals("up")) worldY += speed;
+        if(direction.equals("down")) worldY -= speed;
+        if(direction.equals("left")) worldX += speed;
+        if(direction.equals("right")) worldX -= speed;
     }
 }

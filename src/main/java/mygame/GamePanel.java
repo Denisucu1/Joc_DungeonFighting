@@ -13,7 +13,9 @@ public class GamePanel extends JPanel implements Runnable {
     Sound music = new Sound();
     Sound se = new Sound();
 
+
     public int gameState;
+    public final int titleState = 0;
     public final int playState = 1;
     public final int dialogueState = 2;
 
@@ -50,6 +52,7 @@ public class GamePanel extends JPanel implements Runnable {
         this.addKeyListener(keyH);
         this.setFocusable(true);
         this.gameState = playState;
+        this.gameState = titleState;
 
         tileM = new TileManager(this);
         cChecker = new CollisionChecker(this);
@@ -83,9 +86,12 @@ public class GamePanel extends JPanel implements Runnable {
     public void update() {
         if (gameState == playState) {
             player.update();
-        }
-        if (gameState == dialogueState) {
-            // Jocul rămâne înghețat pe durata dialogului
+            // Dacă obiectele tale au animație, asigură-te că le dai update aici
+            for(int i = 0; i < obj.length; i++) {
+                if(obj[i] != null && obj[i].animating) {
+                    // Logica ta de schimbare a cadrelor (frames) pentru ușa/chest
+                }
+            }
         }
     }
 
@@ -94,28 +100,24 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        // 1. Desenează harta
-        tileM.draw(g2);
-
-        // 2. Desenează obiectele
-        for (int i = 0; i < obj.length; i++) {
-            if (obj[i] != null) {
-                obj[i].draw(g2, this);
-            }
+        // TITLE STATE
+        if (gameState == titleState) {
+            ui.draw(g2); // Aici ui.draw va chema drawTitleScreen()
         }
-
-        // 3. Desenează jucătorul
-        player.draw(g2);
-
-        // 4. Desenează interfața (UI) - ULTIMA, ca să fie deasupra tuturor
-        ui.draw(g2);
-
+        // PLAY STATE & DIALOGUE
+        else {
+            tileM.draw(g2);
+            for (int i = 0; i < obj.length; i++) {
+                if (obj[i] != null) obj[i].draw(g2, this);
+            }
+            player.draw(g2);
+            ui.draw(g2);
+        }
         g2.dispose();
     }
 
     public void setupGame() {
         aSetter.setObject();
-        playMusic(0);
     }
 
     public void playMusic(int i) {

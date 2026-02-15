@@ -6,6 +6,8 @@ import java.awt.image.BufferedImage;
 import mygame.GamePanel;
 
 public class SuperObject {
+
+    public boolean opened = false;
     public BufferedImage[] images;
     public String name;
     public boolean collision = false;
