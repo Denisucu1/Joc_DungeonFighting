@@ -159,39 +159,36 @@ public class Player extends Entity {
     }
 
     public void pickUpObject(int i) {
-        if (i != 999)
-        {
-            gp.keyH.upPressed = false;
-            gp.keyH.downPressed = false;
-            gp.keyH.leftPressed = false;
-            gp.keyH.rightPressed = false;
+        // Adăugăm: && gp.gameState == gp.playState
+        // Asta înseamnă: "Dacă atingi ceva, dar NUMAI dacă nu suntem deja într-un dialog"
+        if (i != 999 && gp.gameState == gp.playState) {
 
             String objectName = gp.obj[i].name;
 
             switch (objectName) {
                 case "Key":
-                    gp.gameState = gp.dialogueState;
-                    gp.ui.currentDialogue = "Ai luat o cheie!";
-                    gp.obj[i] = null;
+                    gp.playSE(1);
                     hasKey++;
+                    gp.obj[i] = null;
+                    gp.ui.currentDialogue = "Ai luat o cheie!";
+                    gp.gameState = gp.dialogueState; // Schimbăm starea ca să oprim spam-ul
                     break;
                 case "Door":
                     if (hasKey > 0) {
-                        gp.obj[i].animating = true; // Pornește animația
-                        gp.obj[i].collision = false; // Permite trecerea
+                        gp.playSE(3);
+                        gp.obj[i].animating = true;
+                        gp.obj[i].collision = false;
                         hasKey--;
-                        // Opțional: adaugă un dialog scurt:
-                        gp.gameState = gp.dialogueState;
-                        gp.ui.currentDialogue = "Ai folosit o cheie pentru a deschide ușa.";
                     } else {
-                        gp.gameState = gp.dialogueState;
                         gp.ui.currentDialogue = "Ușa e încuiată.\nGăsește o cheie!";
+                        gp.gameState = gp.dialogueState;
                     }
                     break;
                 case "Chest":
+                    gp.playSE(2);
                     gp.obj[i].animating = true;
-                    gp.gameState = gp.dialogueState;
                     gp.ui.currentDialogue = "BRAVO!\nAi terminat nivelul!";
+                    gp.gameState = gp.dialogueState;
                     break;
             }
         }

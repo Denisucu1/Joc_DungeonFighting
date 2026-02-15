@@ -9,7 +9,7 @@ public class OBJ_Door extends SuperObject {
         name = "Door";
         collision = true;
         scale = 1.6;
-        solidArea = new Rectangle(0, 0, (int)(48 * scale), (int)(48 * scale));
+        solidArea = new Rectangle(-5, -5, (int)(48 * scale)+10, (int)(48 * scale)+10);
         images = new BufferedImage[6];
         try {
             BufferedImage sheet = ImageIO.read(getClass().getResourceAsStream("/objects/doors.png"));

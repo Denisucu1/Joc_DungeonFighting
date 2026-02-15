@@ -10,6 +10,9 @@ import object.SuperObject;
 
 public class GamePanel extends JPanel implements Runnable {
 
+    Sound music = new Sound();
+    Sound se = new Sound();
+
     public int gameState;
     public final int playState = 1;
     public final int dialogueState = 2;
@@ -112,5 +115,23 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void setupGame() {
         aSetter.setObject();
+        playMusic(0);
     }
+
+    public void playMusic(int i) {
+        music.setFile(i);
+        music.setVolume(-20.0f); // Încearcă -20.0f sau -30.0f pentru a fi mai încet
+        music.play();
+        music.loop();
+    }
+
+    public void stopMusic() {
+        music.stop();
+    }
+
+    public void playSE(int i) { // SE = Sound Effect
+        se.setFile(i);
+        se.play();
+    }
+
 }
