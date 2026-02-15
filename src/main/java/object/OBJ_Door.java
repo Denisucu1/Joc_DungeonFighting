@@ -8,7 +8,7 @@ public class OBJ_Door extends SuperObject {
     public OBJ_Door() {
         name = "Door";
         collision = true;
-        scale = 1.5;
+        scale = 1.6;
         solidArea = new Rectangle(0, 0, (int)(48 * scale), (int)(48 * scale));
         images = new BufferedImage[6];
         try {

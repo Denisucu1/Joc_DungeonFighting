@@ -10,6 +10,9 @@ import object.SuperObject;
 
 public class GamePanel extends JPanel implements Runnable {
 
+    public int gameState;
+    public final int playState = 1;
+    public final int dialogueState = 2;
 
     public AssetSetter aSetter = new AssetSetter(this);
     final int originalTileSize = 16;
@@ -28,7 +31,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     public UI ui = new UI(this);
 
-    KeyHandler keyH = new KeyHandler();
+    public KeyHandler keyH = new KeyHandler(this);
     Thread gameThread;
 
     public Player player = new Player(this, keyH);
@@ -43,7 +46,7 @@ public class GamePanel extends JPanel implements Runnable {
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
-
+        this.gameState = playState;
 
         tileM = new TileManager(this);
         cChecker = new CollisionChecker(this);
@@ -75,7 +78,12 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-        player.update();
+        if (gameState == playState) {
+            player.update();
+        }
+        if (gameState == dialogueState) {
+            // Jocul rămâne înghețat pe durata dialogului
+        }
     }
 
     @Override
@@ -83,19 +91,23 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
+        // 1. Desenează harta
         tileM.draw(g2);
 
+        // 2. Desenează obiectele
         for (int i = 0; i < obj.length; i++) {
             if (obj[i] != null) {
                 obj[i].draw(g2, this);
             }
         }
 
+        // 3. Desenează jucătorul
         player.draw(g2);
-        g2.dispose();
 
-        player.draw(g2);
+        // 4. Desenează interfața (UI) - ULTIMA, ca să fie deasupra tuturor
         ui.draw(g2);
+
+        g2.dispose();
     }
 
     public void setupGame() {

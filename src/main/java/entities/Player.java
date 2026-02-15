@@ -159,23 +159,40 @@ public class Player extends Entity {
     }
 
     public void pickUpObject(int i) {
-        if (i != 999) {
+        if (i != 999)
+        {
+            gp.keyH.upPressed = false;
+            gp.keyH.downPressed = false;
+            gp.keyH.leftPressed = false;
+            gp.keyH.rightPressed = false;
+
             String objectName = gp.obj[i].name;
 
-            if (objectName.equals("Key")) {
-                hasKey++;
-                gp.obj[i] = null;
-            }
-            else if (objectName.equals("Door")) {
-                if (hasKey > 0 && !gp.obj[i].animating && gp.obj[i].frameIndex == 0) {
+            switch (objectName) {
+                case "Key":
+                    gp.gameState = gp.dialogueState;
+                    gp.ui.currentDialogue = "Ai luat o cheie!";
+                    gp.obj[i] = null;
+                    hasKey++;
+                    break;
+                case "Door":
+                    if (hasKey > 0) {
+                        gp.obj[i].animating = true; // Pornește animația
+                        gp.obj[i].collision = false; // Permite trecerea
+                        hasKey--;
+                        // Opțional: adaugă un dialog scurt:
+                        gp.gameState = gp.dialogueState;
+                        gp.ui.currentDialogue = "Ai folosit o cheie pentru a deschide ușa.";
+                    } else {
+                        gp.gameState = gp.dialogueState;
+                        gp.ui.currentDialogue = "Ușa e încuiată.\nGăsește o cheie!";
+                    }
+                    break;
+                case "Chest":
                     gp.obj[i].animating = true;
-                    gp.obj[i].collision = false; // Poți trece prin ea după ce începe să se deschidă
-                    hasKey--;
-                }
-            }
-            else if (objectName.equals("Chest")) {
-                gp.obj[i].animating = true;
-                System.out.println("Comoara e a ta!");
+                    gp.gameState = gp.dialogueState;
+                    gp.ui.currentDialogue = "BRAVO!\nAi terminat nivelul!";
+                    break;
             }
         }
     }

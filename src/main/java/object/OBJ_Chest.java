@@ -8,11 +8,12 @@ import java.awt.image.BufferedImage;
 public class OBJ_Chest extends SuperObject {
     public OBJ_Chest() {
         name = "Chest";
+        scale = 0.8; // Setăm scala prima dată
         images = new BufferedImage[5];
 
-        int size = (int)(48 * scale);
-        int offset = (48 - size) / 2;
-        solidArea = new Rectangle(offset, offset, size, size);
+        // Definim o zonă solidă fixă (48 e mărimea standard a tile-ului tău)
+        // O ajustăm manual pentru cufăr
+        solidArea = new Rectangle(4, 4, 40, 40);
 
         try {
             BufferedImage sheet = ImageIO.read(getClass().getResourceAsStream("/objects/Chest.png"));
